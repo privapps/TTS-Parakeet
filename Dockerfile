@@ -1,18 +1,9 @@
-FROM ubuntu:20.04
+FROM privapps/tts-parakeet:0.3_base
 
-RUN apt-get update -y --fix-missing && apt-get install -y libsndfile1 libsndfile1 unzip wget git python3 pip && pip install paddle-parakeet paddlepaddle scipy nltk
-RUN cd /usr/bin ; ln -s python3 python
+RUN python -c "import nltk.data;tokenizer = nltk.data.load('tokenizers/punkt/english.pickle');tokenizer.tokenize('hello world')"
 
+COPY run.sh /
+COPY run.py /opt/Parakeet/examples/tacotron2
+RUN mkdir -p $WORKDIR ; chmod a+rwx $WORKDIR run.sh ; apt install -y lame
 
-ENV WORKDIR /workspace
-
-RUN cd /opt/ ;\
-    wget -q https://paddlespeech.bj.bcebos.com/Parakeet/tacotron2_ljspeech_ckpt_0.3.zip >/dev/null && unzip tacotron2_ljspeech_ckpt_0.3.zip && rm -f tacotron2_ljspeech_ckpt_0.3.zip & \
-    wget -q https://paddlespeech.bj.bcebos.com/Parakeet/waveflow_ljspeech_ckpt_0.3.zip >/dev/null &&  unzip waveflow_ljspeech_ckpt_0.3.zip && rm -f waveflow_ljspeech_ckpt_0.3.zip & \
-    git clone --depth 1 https://github.com/iclementine/Parakeet & \
-    wait
-
-
-RUN python -c "import nltk.data; nltk.download('punkt')" 
-
-ENTRYPOINT ["bash"]
+ENTRYPOINT ["/run.sh"]
