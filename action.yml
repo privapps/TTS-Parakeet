@@ -1,0 +1,19 @@
+# action.yml
+name: 'TTS-PARAKEET'
+description: 'Generate Engish Speech From Text'
+inputs:
+  text:  # id of input
+    description: 'What text?'
+    required: true
+    default: 'World'
+  format:  # id of input
+    description: 'mp3 or wav'
+    required: false
+    default: 'mp3'
+  content: # id of output
+    required: false
+    description: 'path that wave binary save to'
+    default: './__out__.mp3'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
