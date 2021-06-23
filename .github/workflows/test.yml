@@ -1,0 +1,17 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: privapps/TTS-Parakeet@main
+        with:
+          text: '1 2 3'
+          format: 'mp3'
+          content: './out.mp3'
+      - run: ls -l
