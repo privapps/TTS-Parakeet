@@ -34,6 +34,7 @@ def one_by_one(line, arr):
     text = line.strip()
     if(len(text)<=1):
         return
+    print(line)
     sentence = paddle.to_tensor(frontend(line)).unsqueeze(0)
 
     with paddle.no_grad():
@@ -46,8 +47,8 @@ def one_by_one(line, arr):
     arr.append(audio[0].numpy())
 
 samplerate = 22050
-    
-def generate_blank(seconds : float):    
+
+def generate_blank(seconds : float):
     samples = int(samplerate * seconds) # aka samples per second
     return np.resize( 0, ( samples, ) )
 
@@ -81,6 +82,7 @@ for paragraph in lines:
         except Exception as inst:
             print("Unexpected error:", sys.exc_info()[0])
     npwav.append(generate_blank(0.8))
+
 if len(npwav) > 1:
     file_name = out_prefix + str(len(out_part)) + '.wav'
     out_part.append(file_name)
@@ -93,4 +95,7 @@ from scipy.io import wavfile
 for i in out_part:
     rate, data = wavfile.read(i)
     npwav.append(data)
-wvwrite(file_name, samplerate, np.concatenate(npwav))
+if len(npwav) > 1 :
+    wvwrite(file_name, samplerate, np.concatenate(npwav))
+else:
+    wvwrite(file_name, samplerate, npwav[0])

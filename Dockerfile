@@ -1,6 +1,6 @@
 FROM privapps/tts-parakeet:0.3_base
 
-RUN python -c "import nltk.data;tokenizer = nltk.data.load('tokenizers/punkt/english.pickle');tokenizer.tokenize('hello world')"
+RUN python -c "import nltk;nltk.download('punkt');nltk.data.load('tokenizers/punkt/english.pickle')"
 
 COPY run.sh /
 COPY run.py /opt/Parakeet/examples/tacotron2
