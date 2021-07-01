@@ -2,16 +2,15 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [duo-action]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: privapps/TTS-Parakeet@main
+      - uses: privapps/TTS-Parakeet@duo-action
         with:
           text: '1 2 3'
-          format: 'mp3'
           content: './out.mp3'
       - run: ls -l

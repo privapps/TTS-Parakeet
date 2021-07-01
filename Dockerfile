@@ -1,8 +1,8 @@
-FROM privapps/tts-parakeet:latest
+FROM privapps/tts-parakeet:duo
 
 
 COPY action.sh /
-COPY prepare.py /
+COPY duo.py /opt/Parakeet/examples/
 
 RUN chmod +x /action.sh
 
