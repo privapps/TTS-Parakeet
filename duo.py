@@ -58,7 +58,7 @@ def one_by_one(line, arr):
         return
     long_words = [wrd for wrd in nltk.word_tokenize(text) if len(wrd) > 3]
     print('^^long_words^^', long_words, text)
-    if len(long_words) > 3 and not re.search(r'([A-Z]\.)+', text):
+    if len(long_words) > 3 and not re.search(r'([A-Z]\.)+', text) and not re.search(r'Chin(a|ese)', text):
         print('debug',text, nltk.word_tokenize(text))
         audio_data = _tacotron2_one(text)
     else:
