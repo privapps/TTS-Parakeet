@@ -57,9 +57,8 @@ def one_by_one(line, arr):
     if(len(text)<=1):
         return
     long_words = [wrd for wrd in nltk.word_tokenize(text) if len(wrd) > 3]
-    print('^^long_words^^', long_words, text)
     if len(long_words) > 3 and not re.search(r'([A-Z]\.)+', text) and not re.search(r'Chin(a|ese)', text):
-        print('debug',text, nltk.word_tokenize(text))
+        print('debug: ',text, nltk.word_tokenize(text))
         audio_data = _tacotron2_one(text)
     else:
         audio_data = _transformer_one(text)
@@ -92,7 +91,7 @@ def do_long_sentence(line, npwav):
 
     for word in o_words:
         one_by_one(word, npwav)
-        npwav.append(generate_blank(0.2))
+        npwav.append(generate_blank(0.15))
 
 def _tacotron2_one(line : str):
     print('$$',line,'$$')
@@ -141,6 +140,7 @@ def write_multi_wav_file(lines):
             print('paragraph <<<',line, '>>>')
             try:
                 if len(line) < 1:
+                    npwav.append(generate_blank(0.15))
                     continue
                 words = len(nltk.word_tokenize(line))
                 if words < 3: # sentence too short, has to use transformer
@@ -150,7 +150,7 @@ def write_multi_wav_file(lines):
                 else:
                     one_by_one(line, npwav)
 
-                npwav.append(generate_blank(0.5))
+                npwav.append(generate_blank(0.6))
                 # wav to part file
                 file_name = OUTPUT_PREFIX + str(len(out_part)) + '.wav'
                 wvwrite(file_name, SAMPLE_RATE, np.concatenate(npwav))
@@ -158,7 +158,7 @@ def write_multi_wav_file(lines):
                 npwav = []
             except Exception as inst:
                 print("Unexpected error:", sys.exc_info())
-        npwav.append(generate_blank(0.8))
+        npwav.append(generate_blank(1))
 
     if len(npwav) > 1:
         file_name = OUTPUT_PREFIX + str(len(out_part)) + '.wav'
