@@ -57,7 +57,7 @@ def one_by_one(line, arr):
     if(len(text)<=1):
         return
     long_words = [wrd for wrd in nltk.word_tokenize(text) if len(wrd) > 3]
-    if len(long_words) > 3 and not re.search(r'([A-Z]\.)+', text) and not re.search(r'Chin(a|ese)', text):
+    if len(long_words) > 3 and not re.search(r'([A-Z]\.)+', text) and not re.search(r'Chin(a|ese)', text) and not re.search(r'(i|I)sland', text):
         print('debug: ',text, nltk.word_tokenize(text))
         audio_data = _tacotron2_one(text)
     else:
@@ -182,6 +182,7 @@ file_name='/workspace/__out__.wav'
 from scipy.io import wavfile
 for i in out_part:
     rate, data = wavfile.read(i)
+    npwav.append(generate_blank(0.8))
     npwav.append(data)
 
 
