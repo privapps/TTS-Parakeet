@@ -54,10 +54,10 @@ tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
 def one_by_one(line, arr):
     text = line.strip()
-    if(len(text)<=1):
+    if len(text)<=1 or not re.search(r'[a-zA-Z0-9]+', text):
         return
     long_words = [wrd for wrd in nltk.word_tokenize(text) if len(wrd) > 3]
-    if len(long_words) > 3 and not re.search(r'([A-Z]\.)+', text) and not re.search(r'Chin(a|ese)', text) and not re.search(r'(i|I)sland', text):
+    if len(long_words) > 3 and not re.search(r'([A-Z]\.)+', text) and not re.search(r'Chin(a|ese)', text) and not re.search(r'(i|I)sland', text) and not re.search(r'(F|f)ocusing ', text) :
         print('debug: ',text, nltk.word_tokenize(text))
         audio_data = _tacotron2_one(text)
     else:
@@ -115,12 +115,16 @@ def _transformer_one(line : str):
         outputs = transformer_model.infer(text, verbose=True)
     audio = vocoder.infer(paddle.transpose(outputs["mel_output"], [0, 2, 1]))
     wav = audio[0].numpy().T #(C, T)
-    # in case spiked noise
-    if np.max(wav) >= 1:
-        pc=np.percentile(wav, 99.99)
-        for po in np.argwhere((wav>pc) | (wav<-pc)):
-            index=po[0]
-            wav[max(0,index-50):min(len(po),index+50)]=0
+
+    # in case spiked noise at the end
+    check_po=len(wav) - 600
+    pc=np.percentile(wav[:check_po], 99)
+    sub_wav=wav[check_po:]
+    po = np.argwhere((sub_wav>pc) | (sub_wav<-pc))
+
+    if len(po) > 0 and len(po[0]) > 0:
+        index=po[0][0] + check_po
+        wav[max(check_po,index-300):min(len(wav),index+300)]=0
     return wav
 
 
@@ -150,7 +154,7 @@ def write_multi_wav_file(lines):
                 else:
                     one_by_one(line, npwav)
 
-                npwav.append(generate_blank(0.6))
+                npwav.append(generate_blank(0.5))
                 # wav to part file
                 file_name = OUTPUT_PREFIX + str(len(out_part)) + '.wav'
                 wvwrite(file_name, SAMPLE_RATE, np.concatenate(npwav))
@@ -158,7 +162,7 @@ def write_multi_wav_file(lines):
                 npwav = []
             except Exception as inst:
                 print("Unexpected error:", sys.exc_info())
-        npwav.append(generate_blank(1))
+        #npwav.append(generate_blank(0.7))
 
     if len(npwav) > 1:
         file_name = OUTPUT_PREFIX + str(len(out_part)) + '.wav'
@@ -182,7 +186,7 @@ file_name='/workspace/__out__.wav'
 from scipy.io import wavfile
 for i in out_part:
     rate, data = wavfile.read(i)
-    npwav.append(generate_blank(0.8))
+    npwav.append(generate_blank(1.2))
     npwav.append(data)
 
 
