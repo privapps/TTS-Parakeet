@@ -144,7 +144,7 @@ def write_multi_wav_file(lines):
             print('paragraph <<<',line, '>>>')
             try:
                 if len(line) < 1:
-                    npwav.append(generate_blank(0.15))
+                    npwav.append(generate_blank(1.5))
                     continue
                 words = len(nltk.word_tokenize(line))
                 if words < 3: # sentence too short, has to use transformer
@@ -186,7 +186,7 @@ file_name='/workspace/__out__.wav'
 from scipy.io import wavfile
 for i in out_part:
     rate, data = wavfile.read(i)
-    npwav.append(generate_blank(1.2))
+    npwav.append(generate_blank(0.7))
     npwav.append(data)
 
 
