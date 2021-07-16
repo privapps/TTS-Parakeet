@@ -57,7 +57,7 @@ def one_by_one(line, arr):
     if len(text)<=1 or not re.search(r'[a-zA-Z0-9]+', text):
         return
     long_words = [wrd for wrd in nltk.word_tokenize(text) if len(wrd) > 3]
-    if len(long_words) > 3 and not re.search(r'([A-Z]\.)+', text) and not re.search(r'Chin(a|ese)', text) and not re.search(r'(i|I)sland', text) and not re.search(r'(F|f)ocusing ', text) :
+    if len(long_words) > 3 and not re.search(r'([A-Z]\.)+', text) and not re.search(r'Chin(a|ese)', text) and not re.search(r'(?i)focus(es|ing)', text) and not re.search(r'(?i)(rational|anger|imagine|island)', text) :
         print('debug: ',text, nltk.word_tokenize(text))
         audio_data = _tacotron2_one(text)
     else:
@@ -144,7 +144,7 @@ def write_multi_wav_file(lines):
             print('paragraph <<<',line, '>>>')
             try:
                 if len(line) < 1:
-                    npwav.append(generate_blank(1.5))
+                    npwav.append(generate_blank(.9))
                     continue
                 words = len(nltk.word_tokenize(line))
                 if words < 3: # sentence too short, has to use transformer
