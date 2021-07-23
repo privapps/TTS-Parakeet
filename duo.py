@@ -57,7 +57,7 @@ def one_by_one(line, arr):
     if len(text)<=1 or not re.search(r'[a-zA-Z0-9]+', text):
         return
     long_words = [wrd for wrd in nltk.word_tokenize(text) if len(wrd) > 3]
-    if len(long_words) > 3 and not re.search(r'([A-Z]\.)+', text) and not re.search(r'Chin(a|ese)', text) and not re.search(r'(?i)focus(es|ing)', text) and not re.search(r'(?i)(rational|anger|imagine|island)', text) :
+    if len(long_words) > 3 and not re.search(r'([A-Z]\.)+', text) and not re.search(r'Chin(a|ese)', text) and not re.search(r'(?i)focus(es|ing)', text) and not re.search(r'(?i)(rational|anger|imagine|island)', text) and text.find('é') < 0:
         print('debug: ',text, nltk.word_tokenize(text))
         audio_data = _tacotron2_one(text)
     else:
@@ -98,11 +98,11 @@ def _tacotron2_one(line : str):
     sentence = paddle.to_tensor(tacotron2_frontend(line.strip())).unsqueeze(0)
     with paddle.no_grad():
         outputs = tacotron2_model.infer(sentence)
-    mel_output = outputs["mel_outputs_postnet"][0].numpy().T
-    alignment = outputs["alignments"][0].numpy().T
-
+    mel_output = outputs["mel_outputs_postnet"]
+    #alignment = outputs["alignments"][0].numpy().T
+    _save_tensor(line, mel_output, 'a_')
     #now bin to audio
-    audio = vocoder.infer(paddle.transpose(outputs["mel_outputs_postnet"], [0, 2, 1]))
+    audio = vocoder.infer(paddle.transpose(mel_output, [0, 2, 1]))
     return audio[0].numpy()
 
 
@@ -113,7 +113,10 @@ def _transformer_one(line : str):
 
     with paddle.no_grad():
         outputs = transformer_model.infer(text, verbose=True)
-    audio = vocoder.infer(paddle.transpose(outputs["mel_output"], [0, 2, 1]))
+    mel_output = outputs["mel_output"]
+    _save_tensor(line, mel_output, 'r_')
+
+    audio = vocoder.infer(paddle.transpose(mel_output, [0, 2, 1]))
     wav = audio[0].numpy().T #(C, T)
 
     # in case spiked noise at the end
@@ -169,6 +172,11 @@ def write_multi_wav_file(lines):
         out_part.append(file_name)
         wvwrite(file_name, SAMPLE_RATE, np.concatenate(npwav))
     return out_part
+
+def _save_tensor(line : str, tensor, prefix: str):
+    f_n = OUTPUT_PREFIX + prefix + re.sub("[^a-z]+", "_", line.lower()) + '.npy'
+    np.save(f_n,tensor.numpy())
+
 
 ### main
 tacotron2_frontend = EnglishCharacter()
