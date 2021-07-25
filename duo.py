@@ -57,12 +57,14 @@ def one_by_one(line, arr):
     if len(text)<=1 or not re.search(r'[a-zA-Z0-9]+', text):
         return
     long_words = [wrd for wrd in nltk.word_tokenize(text) if len(wrd) > 3]
-    if len(long_words) > 3 and not re.search(r'([A-Z]\.)+', text) and not re.search(r'Chin(a|ese)', text) and not re.search(r'(?i)focus(es|ing)', text) and not re.search(r'(?i)(rational|anger|imagine|island)', text) and not text.find('é') < 0 and re.search(r'(?i)chaos', text):
-        print('debug: ',text, nltk.word_tokenize(text))
+    if len(long_words) > 3 and _should_tacotron2(text):
         audio_data = _tacotron2_one(text)
     else:
         audio_data = _transformer_one(text)
     arr.append(audio_data)
+
+def _should_tacotron2(text : str):
+    return not re.search(r'([A-Z]\.)+', text) and not re.search(r'Chin(a|ese)', text) and not re.search(r'(?i)focus(es|ing)', text) and not re.search(r'(?i)(rational|anger|imagine|island)', text) and text.find('é') < 0 and not re.search(r'(?i)\ chaos', text)
 
 def do_long_sentence(line, npwav):
     # smart to split it into long sentences
