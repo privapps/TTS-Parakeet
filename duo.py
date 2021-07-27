@@ -64,7 +64,7 @@ def one_by_one(line, arr):
     arr.append(audio_data)
 
 def _should_tacotron2(text : str):
-    return not re.search(r'([A-Z]\.)+', text) and not re.search(r'Chin(a|ese)', text) and not re.search(r'(?i)focus(es|ing)', text) and not re.search(r'(?i)(rational|anger|imagine|island)', text) and text.find('é') < 0 and not re.search(r'(?i)\ chaos', text)
+    return not re.search(r'([A-Z]\.)+', text) and not re.search(r'Chin(a|ese)', text) and not re.search(r'(?i)focus(es|ing|ed)', text) and not re.search(r'(?i)(rational|anger|imagine|island|chaos)', text) and text.find('é') < 0 and not re.search(r'Diane', text)
 
 def do_long_sentence(line, npwav):
     # smart to split it into long sentences
@@ -95,7 +95,7 @@ def do_long_sentence(line, npwav):
         one_by_one(word, npwav)
         npwav.append(generate_blank(0.15))
 
-def _tacotron2_one(line : str):
+def _tacotron2_one(line : str, retry = False):
     print('$$',line,'$$')
     sentence = paddle.to_tensor(tacotron2_frontend(line.strip())).unsqueeze(0)
     with paddle.no_grad():
@@ -105,7 +105,8 @@ def _tacotron2_one(line : str):
     _save_tensor(line, mel_output, 'a_')
     #now bin to audio
     audio = vocoder.infer(paddle.transpose(mel_output, [0, 2, 1]))
-    return audio[0].numpy()
+    wav = audio[0].numpy()
+    return wav if retry or len(wav) / SAMPLE_RATE < 10 else _tacotron2_one(line, True)
 
 
 def _transformer_one(line : str):
