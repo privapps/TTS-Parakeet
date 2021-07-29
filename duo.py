@@ -64,7 +64,7 @@ def one_by_one(line, arr):
     arr.append(audio_data)
 
 def _should_tacotron2(text : str):
-    return not re.search(r'([A-Z]\.)+', text) and not re.search(r'Chin(a|ese)', text) and not re.search(r'(?i)focus(es|ing|ed)', text) and not re.search(r'(?i)(rational|anger|imagine|island|chaos)', text) and text.find('é') < 0 and not re.search(r'Diane', text)
+    return not re.search(r'([A-Z]\.)+', text) and not re.search(r'Chin(a|ese)', text) and not re.search(r'(?i)focus(es|ing|ed)', text) and not re.search(r'(?i)(rational|anger|imagine|island|chaos)', text) and text.find('é') < 0 and not re.search('Diane', text) and not re.search('RAHN',text)
 
 def do_long_sentence(line, npwav):
     # smart to split it into long sentences
@@ -99,7 +99,7 @@ def _tacotron2_one(line : str, retry = False):
     print('$$',line,'$$')
     sentence = paddle.to_tensor(tacotron2_frontend(line.strip())).unsqueeze(0)
     with paddle.no_grad():
-        outputs = tacotron2_model.infer(sentence)
+        outputs = tacotron2_model.infer(sentence, max_decoder_steps=1500)
     mel_output = outputs["mel_outputs_postnet"]
     #alignment = outputs["alignments"][0].numpy().T
     _save_tensor(line, mel_output, 'a_')
@@ -115,7 +115,7 @@ def _transformer_one(line : str):
     text = paddle.unsqueeze(text, 0)  # (1, T)
 
     with paddle.no_grad():
-        outputs = transformer_model.infer(text, verbose=True)
+        outputs = transformer_model.infer(text, max_length=1500)
     mel_output = outputs["mel_output"]
     _save_tensor(line, mel_output, 'r_')
 
