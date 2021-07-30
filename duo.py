@@ -64,7 +64,7 @@ def one_by_one(line, arr):
     arr.append(audio_data)
 
 def _should_tacotron2(text : str):
-    return not re.search(r'([A-Z]\.)+', text) and not re.search(r'Chin(a|ese)', text) and not re.search(r'(?i)focus(es|ing|ed)', text) and not re.search(r'(?i)(rational|anger|imagine|island|chaos)', text) and text.find('é') < 0 and not re.search('Diane', text) and not re.search('RAHN',text)
+    return not re.search(r'([A-Z]\.)+', text) and not re.search(r'Chin(a|ese)', text) and not re.search(r'(?i)focus(es|ing|ed)', text) and not re.search(r'(?i)(rational|anger|imagine|island|chaos)', text) and text.find('é') < 0 and not re.search(r'Diane|Christ|RAHN|Jesus', text)
 
 def do_long_sentence(line, npwav):
     # smart to split it into long sentences
