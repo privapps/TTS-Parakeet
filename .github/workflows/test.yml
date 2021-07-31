@@ -11,6 +11,6 @@ jobs:
     steps:
       - uses: privapps/TTS-Parakeet@duo-action
         with:
-          text: '1 2 3'
+          text: "1 2 3.\nYour time is limited, so don't waste it living someone else's life. Don't be trapped by dogma,  which is living with the results of other people's thinking. - Steve Jobs"
           content: './out.mp3'
       - run: ls -l
