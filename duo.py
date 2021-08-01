@@ -19,6 +19,10 @@ from examples.waveflow import config as waveflow_config
 
 from scipy.io.wavfile import write as wvwrite
 from scipy.io import wavfile
+import nltk.data
+
+nltk.download('punkt')
+tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
 SAMPLE_RATE = 22050
 OUTPUT_PREFIX = '/workspace/p_'
@@ -53,12 +57,6 @@ def init_vocoder_model():
     layer_tools.recursively_remove_weight_norm(vocoder)
     vocoder.eval()
     return vocoder
-
-
-import nltk.data
-
-nltk.download('punkt')
-tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
 
 def one_by_one(line, arr):
@@ -115,8 +113,8 @@ def do_long_sentence(line, npwav):
 def _tacotron2_one(line: str):
     print('$$', line, '$$')
     sentence = paddle.to_tensor(tacotron2_frontend(line.strip())).unsqueeze(0)
-    algm, mel_output = _tacotron2_satisfy(sentence)
-    _save_tensor(line, mel_output, 'a_', algm)
+    algm, mel_output = _tacotron2_satisfy(line, sentence)
+    _save_tensor(line, mel_output, 'A_', algm)
     # now bin to audio
     audio = vocoder.infer(paddle.transpose(mel_output, [0, 2, 1]))
     return audio[0].numpy()
@@ -128,12 +126,14 @@ def _tacotron2_gen(sentence: str):
         return (_get_alignmnet(outputs), outputs["mel_outputs_postnet"])
 
 
-def _tacotron2_satisfy(sentence: str, threashhold=0.0015, max_num=10):
+def _tacotron2_satisfy(line: str, sentence, threashhold=0.0015, max_num=20):
     keep = []
     for i in range(0, max_num):
         algm, tensor = _tacotron2_gen(sentence)
         if algm < threashhold:
             return (algm, tensor)
+        else:
+            _save_tensor(line, tensor, 'B_', algm)
         keep.append((algm, tensor))
     min = 0
     for idx, element in enumerate(keep):
@@ -156,7 +156,7 @@ def _transformer_one(line: str):
     with paddle.no_grad():
         outputs = transformer_model.infer(text, max_length=1500)
     mel_output = outputs["mel_output"]
-    _save_tensor(line, mel_output, 'r_', '')
+    _save_tensor(line, mel_output, 'R_', '')
 
     audio = vocoder.infer(paddle.transpose(mel_output, [0, 2, 1]))
     wav = audio[0].numpy().T  # (C, T)
@@ -214,7 +214,7 @@ def write_multi_wav_file(lines):
 
 
 def _save_tensor(line: str, tensor, prefix: str, algm):
-    f_n = OUTPUT_PREFIX + prefix + re.sub("[^a-z0-9]+", "_", line.lower()) + '_' + str(algm) + '.npy'
+    f_n = OUTPUT_PREFIX[0:-2] + prefix + re.sub("[^a-z0-9]+", "_", line.lower()) + '_' + str(algm) + '.npy'
     np.save(f_n, tensor.numpy())
 
 
